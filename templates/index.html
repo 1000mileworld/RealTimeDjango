@@ -24,6 +24,17 @@
             console.log(data);
             document.querySelector('#app').innerHTML = data.message;
         }
+
+
+    document.body.addEventListener("mouseover", function( event ) {
+        //console.log('testing')
+        socket.send(JSON.stringify({
+            'message': ''
+        }));
+    })
+  
+
+
     </script>
 
 </body>
