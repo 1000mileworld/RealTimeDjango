@@ -27,7 +27,10 @@ class WSConsumer(AsyncWebsocketConsumer):
     
         while alpaca.isOpen():
             quote = alpaca.getQuote('AAPL')
-            await self.send(json.dumps({'message': quote.bidprice}))
+            await self.send(json.dumps({
+                'bid': quote.bidprice,
+                'ask': quote.askprice,
+                }))
             await sleep(1)
 
     # async def quote_callback(self,q):

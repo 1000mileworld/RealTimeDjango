@@ -35,9 +35,25 @@
             line: {
                 color: '#DDDF61',
                 width: 2
-            }
+            },
+            name: 'Bid'
         };
-        var plotData = [trace1]
+        var trace2 = {
+            x:[],
+            y:[],
+            mode: 'lines+markers',
+            marker: {
+                color: '#E51E11',
+                size: 8
+            },
+            line: {
+                color: '#E51E11',
+                width: 2
+            },
+            name: 'Ask'
+        };
+
+        var plotData = [trace1,trace2]
         var layout = {
             xaxis: {
                 range: [1, limit],
@@ -49,9 +65,23 @@
                 linecolor: 'black',
                 linewidth: 2,
                 mirror: true,
-                gridcolor: '#C8C8C4'
+                gridcolor: '#C8C8C4',
+                //title: 'Price (USD)',
+                tickformat: '$',
             },
             plot_bgcolor: '#444',
+            showlegend: true,
+            legend: {
+                x: 1,
+                xanchor: 'right',
+                y: 1,
+                bgcolor: '#2E063F',
+                font: {
+                    family: 'sans-serif',
+                    size: 12,
+                    color: '#FFFFFF'
+                },
+            }
         };
 
         Plotly.newPlot('chart',plotData,layout);
@@ -65,11 +95,11 @@
 
             var today = new Date();
             var time = padZero(today.getHours()) + ":" + padZero(today.getMinutes()) + ":" + padZero(today.getSeconds());
-            console.log(time+': '+data.message.toFixed(2));
+            console.log(time+': '+data.bid.toFixed(2));
             Plotly.extendTraces('chart',{ 
-                x: [[time]],
-                y: [[data.message]]
-            }, [0]);
+                x: [[time],[time]],
+                y: [[data.bid],[data.ask]]
+            }, [0,1]);
             cnt++;
             if(cnt > limit) {
                 Plotly.relayout('chart',{
