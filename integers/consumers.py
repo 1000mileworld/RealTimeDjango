@@ -1,54 +1,36 @@
-from channels.generic.websocket import WebsocketConsumer
+from channels.generic.websocket import WebsocketConsumer, AsyncWebsocketConsumer
 from asgiref.sync import async_to_sync
 import json
 from random import randint
-from time import sleep
-
+#from time import sleep
+from asyncio import sleep
+from . import alpaca
  
-class WSConsumer(WebsocketConsumer):
-    def connect(self):
-        self.group_name = 'number_data'
+import nest_asyncio
 
-        #join group
-        async_to_sync(self.channel_layer.group_add)(
-            self.group_name,
-            self.channel_name
-        )
-        
-        self.accept()
-        #self.sourceData()
-        
+class WSConsumer(AsyncWebsocketConsumer):
+    async def connect(self):        
+        await self.accept()
+        # for i in range(100):
+        #     await self.send(json.dumps({'message': randint(1,100)}))
+        #     await sleep(1) 
+
+        # bars = alpaca.getBars('AAPL','2022-01-17','2022-01-21')
+        # for bar in bars:
+        #     await self.send(json.dumps({'message': bar.c}))
+        #     await sleep(1)
+
+        # runs into connection error ~45s after streaming
+        # nest_asyncio.apply() #prevent error: event loop is already running
+        # symbols = ['AAPL']
+        # await alpaca.streamQuote(symbols,self.quote_callback)
     
-    def disconnect(self, close_code):
-        # Leave group
-        async_to_sync(self.channel_layer.group_discard)(
-            self.group_name,
-            self.channel_name
-        )
-    
-    def receive(self, text_data):
-        text_data_json = json.loads(text_data)
-        message = text_data_json['message']
+        while alpaca.isOpen():
+            quote = alpaca.getQuote('AAPL')
+            await self.send(json.dumps({'message': quote.bidprice}))
+            await sleep(1)
 
-        # Send message to room group
-        async_to_sync(self.channel_layer.group_send)(
-            self.group_name,
-            {
-                'type': 'int_message',
-                'message': message
-            }
-        )
-
-    def int_message(self,event):
-        #message = event['message']
-        #message = str(randint(1,100))
-        message = '7' #open 2 instances at same time, both should change
-        # Send message to WebSocket
-        self.send(text_data=json.dumps({
-            'message': message
-        }))
-
-    # def sourceData(self):
-    #     for i in range(1000):
-    #         self.send(json.dumps({'message': randint(1,100)}))
-    #         sleep(1) 
+    # async def quote_callback(self,q):
+    #     await self.send(json.dumps({'message': q.bid_price}))
+    #     await sleep(0.2)
+        #print(q.symbol + ' bid price: ' + str(q.bid_price))
